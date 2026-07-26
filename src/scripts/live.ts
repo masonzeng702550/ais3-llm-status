@@ -9,10 +9,12 @@
 import { OVERALL_LABEL, STATUS_GLYPH, STATUS_LABEL, formatLatency, formatUptime, uptimeBand } from '../lib/status.ts';
 import { uptimePct } from '../lib/stats.ts';
 import { formatDateTime, relativeTime } from '../lib/format.ts';
-import type { DayStat, Status, StatusSnapshot, Summary } from '../lib/types.ts';
+import type { Buckets, DayStat, StatusSnapshot } from '../lib/types.ts';
 
 const RAW = document.body.dataset.raw ?? '';
-const REFRESH_MS = 60_000;
+// Data lands every 30s; poll a little faster so a change is never more than a
+// few seconds stale on screen.
+const REFRESH_MS = 20_000;
 const STALE_MS = 15 * 60_000;
 
 const ERROR_REASON: Record<string, string> = {
@@ -30,11 +32,11 @@ const ERROR_REASON: Record<string, string> = {
 const $ = <T extends Element>(sel: string) => document.querySelector<T>(sel);
 
 /**
- * raw.githubusercontent caches for five minutes. A per-minute cache key means
- * the CDN can still serve repeat visitors within the same minute, but we never
- * show data more than a minute staler than the branch.
+ * raw.githubusercontent caches for five minutes, so the URL carries a coarse
+ * clock as its cache key: repeat visitors within the same slot still hit the
+ * CDN, but nothing on screen is ever more than one slot behind the branch.
  */
-const bust = (file: string) => `${RAW}/${file}?v=${Math.floor(Date.now() / 60_000)}`;
+const bust = (file: string) => `${RAW}/${file}?v=${Math.floor(Date.now() / REFRESH_MS)}`;
 
 async function fetchJson<T>(file: string): Promise<T> {
   const res = await fetch(bust(file), { cache: 'no-store' });
@@ -83,37 +85,44 @@ function applySnapshot(snapshot: StatusSnapshot): void {
         latency.textContent = component.latencyMs !== null ? formatLatency(component.latencyMs) : '';
       }
 
-      const uptime90 = document.querySelector<HTMLElement>(`[data-uptime90="${component.id}"]`);
-      if (uptime90) uptime90.textContent = `${formatUptime(component.uptime['90d'])} 可用率`;
+      const uptime = document.querySelector<HTMLElement>(`[data-uptime90="${component.id}"]`);
+      if (uptime) uptime.textContent = `${formatUptime(component.uptime['24h'])} 24 小時可用率`;
     }
   }
 }
 
-function applySummary(summary: Summary): void {
-  for (const [id, days] of Object.entries(summary.components)) {
+const clockFmt = new Intl.DateTimeFormat('zh-TW', {
+  timeZone: 'Asia/Taipei',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
+
+function applyBuckets(buckets: Buckets): void {
+  const half = buckets.keys.length / 2;
+
+  for (const [id, stats] of Object.entries(buckets.components)) {
     const bar = document.querySelector<HTMLElement>(`[data-uptime="${id}"]`);
     if (!bar) continue;
 
     const cells = bar.querySelectorAll<HTMLElement>('.day');
-    summary.dates.forEach((date, i) => {
+    buckets.keys.forEach((key, i) => {
       const cell = cells[i];
       if (!cell) return;
-      const stat: DayStat | undefined = days[i];
+      const stat: DayStat | undefined = stats[i];
       const pct = stat ? uptimePct(stat) : null;
 
-      cell.className = `day day-${uptimeBand(pct)}${i < 45 ? ' day-old' : ''}`;
-      cell.dataset.date = date;
-      cell.dataset.tip = tipFor(date, stat, pct);
+      cell.className = `day day-${uptimeBand(pct)}${i < half ? ' day-old' : ''}`;
+      cell.dataset.tip = tipFor(key, stat, pct);
     });
   }
 }
 
-function tipFor(date: string, stat: DayStat | undefined, pct: number | null): string {
-  const [y, m, d] = date.split('-');
-  const day = `${y}/${m}/${d}`;
-  if (!stat || stat.n === 0) return `${day}｜無探測資料`;
+function tipFor(key: string, stat: DayStat | undefined, pct: number | null): string {
+  const clock = clockFmt.format(new Date(key));
+  if (!stat || stat.n === 0) return `${clock}｜無探測資料`;
   return (
-    `${day}｜可用率 ${formatUptime(pct)}｜${stat.n} 次探測` +
+    `${clock}｜可用率 ${formatUptime(pct)}｜${stat.n} 次探測` +
     (stat.down ? `｜失敗 ${stat.down}` : '') +
     (stat.deg ? `｜降級 ${stat.deg}` : '') +
     (stat.p95 !== null ? `｜p95 ${stat.p95}ms` : '')
@@ -122,12 +131,12 @@ function tipFor(date: string, stat: DayStat | undefined, pct: number | null): st
 
 async function refresh(): Promise<void> {
   try {
-    const [snapshot, summary] = await Promise.all([
+    const [snapshot, buckets] = await Promise.all([
       fetchJson<StatusSnapshot>('status.json'),
-      fetchJson<Summary>('summary.json'),
+      fetchJson<Buckets>('minutes.json'),
     ]);
     applySnapshot(snapshot);
-    applySummary(summary);
+    applyBuckets(buckets);
     setNotice('fetch-notice', false);
   } catch {
     // Keep whatever is on screen; just stop claiming it is current.

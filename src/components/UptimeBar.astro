@@ -1,5 +1,4 @@
 ---
-import { formatDayKey } from '../lib/format.ts';
 import { formatUptime, uptimeBand } from '../lib/status.ts';
 import { uptimePct } from '../lib/stats.ts';
 import type { DayStat } from '../lib/types.ts';
@@ -7,31 +6,43 @@ import type { DayStat } from '../lib/types.ts';
 interface Props {
   id: string;
   name: string;
-  dates: string[];
-  days: DayStat[];
-  uptime90: number | null;
+  /** ISO bucket-start timestamps, oldest first */
+  keys: string[];
+  buckets: DayStat[];
+  bucketSeconds: number;
+  /** headline figure shown between the two end labels */
+  uptime: number | null;
+  uptimeLabel: string;
 }
 
-const { id, name, dates, days, uptime90 } = Astro.props;
+const { id, name, keys, buckets, bucketSeconds, uptime, uptimeLabel } = Astro.props;
 
-const cells = dates.map((date, i) => {
-  const stat = days[i] ?? { n: 0, up: 0, deg: 0, down: 0, p50: null, p95: null, max: null };
+const timeFmt = new Intl.DateTimeFormat('zh-TW', {
+  timeZone: 'Asia/Taipei',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
+
+const span = Math.round((keys.length * bucketSeconds) / 60);
+
+const cells = keys.map((key, i) => {
+  const stat = buckets[i] ?? { n: 0, up: 0, deg: 0, down: 0, p50: null, p95: null, max: null };
   const pct = uptimePct(stat);
+  const clock = timeFmt.format(new Date(key));
   return {
-    date,
     band: uptimeBand(pct),
-    // Everything the tooltip needs, so it works without a second data source.
     tip:
       stat.n === 0
-        ? `${formatDayKey(date)}｜無探測資料`
-        : `${formatDayKey(date)}｜可用率 ${formatUptime(pct)}｜${stat.n} 次探測` +
+        ? `${clock}｜無探測資料`
+        : `${clock}｜可用率 ${formatUptime(pct)}｜${stat.n} 次探測` +
           (stat.down ? `｜失敗 ${stat.down}` : '') +
           (stat.deg ? `｜降級 ${stat.deg}` : '') +
           (stat.p95 !== null ? `｜p95 ${stat.p95}ms` : ''),
   };
 });
 
-const measured = days.filter((d) => d.n > 0).length;
+const measured = buckets.filter((b) => b.n > 0).length;
 ---
 
 <div
@@ -39,22 +50,18 @@ const measured = days.filter((d) => d.n > 0).length;
   role="img"
   tabindex="0"
   data-uptime={id}
-  aria-label={`${name} 近 90 天可用率 ${formatUptime(uptime90)}，其中 ${measured} 天有探測資料`}
+  aria-label={`${name} 近 ${span} 分鐘可用率 ${formatUptime(uptime)}，其中 ${measured} 分鐘有探測資料`}
 >
   {
     cells.map((cell, i) => (
-      <div
-        class={`day day-${cell.band}${i < 45 ? ' day-old' : ''}`}
-        data-tip={cell.tip}
-        data-date={cell.date}
-      />
+      <div class={`day day-${cell.band}${i < keys.length / 2 ? ' day-old' : ''}`} data-tip={cell.tip} />
     ))
   }
 </div>
 <div class="uptime-legend">
-  <span>90 天前</span>
+  <span>{span} 分鐘前</span>
   <span class="rule"></span>
-  <strong data-uptime90={id}>{formatUptime(uptime90)} 可用率</strong>
+  <strong data-uptime90={id}>{formatUptime(uptime)} {uptimeLabel}</strong>
   <span class="rule"></span>
-  <span>今天</span>
+  <span>現在</span>
 </div>

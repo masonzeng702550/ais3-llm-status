@@ -27,7 +27,8 @@ defaults:
   # probes contend with each other enough to poison the latency numbers anyway.
   # Probe one component at a time, spaced out.
   concurrency: 1
-  staggerMs: 1500
+  # 9 components x 1s must comfortably fit inside one probe interval.
+  staggerMs: 1000
   # 429 means "slow down", not "you are broken" — back off much further than a
   # normal retry before deciding anything.
   rateLimitRetryDelayMs: 15000
@@ -107,10 +108,25 @@ groups:
         degradedMs: 3000
         timeoutMs: 15000
 
+probe:
+  # GitHub's shortest cron is 5 minutes, so a scheduled run loops internally at
+  # this interval instead. Raising it is the single knob for cutting load on the
+  # upstream service: at 30s this issues ~26,000 requests a day.
+  intervalSeconds: 30
+  # How long one workflow run keeps looping before exiting for the next tick.
+  runSeconds: 270
+
+display:
+  # The bar shows one cell per bucket, newest on the right.
+  barCells: 90
+  barBucketSeconds: 60
+
 alerting:
   webhookEnv: ALERT_WEBHOOK_URL
   failuresBeforeAlert: 2
 
 retention:
-  rawDays: 30
+  # At 30s intervals raw records accumulate ~4 MB a day, so keep a shorter
+  # window than the daily rollups, which are permanent and tiny.
+  rawDays: 7
   summaryDays: 90

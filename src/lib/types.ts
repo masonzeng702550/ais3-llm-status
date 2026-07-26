@@ -66,6 +66,8 @@ export interface MonitorConfig {
   groups: GroupConfig[];
   concurrency: number;
   staggerMs: number;
+  probe: { intervalSeconds: number; runSeconds: number };
+  display: { barCells: number; barBucketSeconds: number };
   alerting: { webhookEnv: string; failuresBeforeAlert: number };
   retention: { rawDays: number; summaryDays: number };
 }
@@ -164,6 +166,20 @@ export interface Summary {
   generatedAt: string;
   /** oldest to newest, exactly `days` entries */
   dates: string[];
+  components: Record<string, DayStat[]>;
+}
+
+/**
+ * Short-window buckets for the live bar — one entry per minute rather than per
+ * day, so the display fills in within the hour instead of over three months.
+ */
+export interface Buckets {
+  schemaVersion: 1;
+  generatedAt: string;
+  /** seconds covered by each bucket */
+  bucketSeconds: number;
+  /** ISO timestamps of each bucket start, oldest to newest */
+  keys: string[];
   components: Record<string, DayStat[]>;
 }
 

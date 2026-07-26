@@ -12,6 +12,8 @@ import { sendAlerts, type Transition } from '../src/lib/notify.ts';
 import { DataStore, resolveDataDir } from '../src/lib/store.ts';
 import {
   EMPTY_DAY,
+  bucketRange,
+  bucketStart,
   dateKey,
   dateRange,
   percentile,
@@ -21,6 +23,7 @@ import {
 } from '../src/lib/stats.ts';
 import { aggregate } from '../src/lib/status.ts';
 import type {
+  Buckets,
   ComponentConfig,
   ComponentStatus,
   DayStat,
@@ -212,6 +215,41 @@ async function main(): Promise<void> {
     summary.components[component.id] = dates.map((d) => byDate.get(d) ?? EMPTY_DAY);
   }
   store.writeSummary(summary);
+
+  // ---- live minute buckets ----
+  // The daily bar takes three months to fill in. This is the same idea at a
+  // resolution you can actually watch: one cell per minute over the last hour
+  // and a half, which fills in while you are looking at it.
+  const { barCells, barBucketSeconds } = config.display;
+  const keys = bucketRange(now, barBucketSeconds, barCells);
+  const windowStart = new Date(keys[0] as string).getTime();
+  const buckets: Buckets = {
+    schemaVersion: 1,
+    generatedAt: startedAt,
+    bucketSeconds: barBucketSeconds,
+    keys,
+    components: {},
+  };
+
+  const byComponentBucket = new Map<string, Map<number, RawRecord[]>>();
+  for (const record of recent) {
+    if (new Date(record.t).getTime() < windowStart) continue;
+    const slot = bucketStart(record.t, barBucketSeconds);
+    let perComponent = byComponentBucket.get(record.c);
+    if (!perComponent) byComponentBucket.set(record.c, (perComponent = new Map()));
+    const list = perComponent.get(slot);
+    if (list) list.push(record);
+    else perComponent.set(slot, [record]);
+  }
+
+  for (const component of components) {
+    const perComponent = byComponentBucket.get(component.id);
+    buckets.components[component.id] = keys.map((key) => {
+      const list = perComponent?.get(new Date(key).getTime());
+      return list ? summarise(list) : EMPTY_DAY;
+    });
+  }
+  store.writeBuckets(buckets);
 
   // ---- state machine: `since` timestamps and alert debouncing ----
   const state: ProbeState = store.readState();

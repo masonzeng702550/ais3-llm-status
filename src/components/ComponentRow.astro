@@ -5,11 +5,12 @@ import type { ComponentStatus, DayStat } from '../lib/types.ts';
 
 interface Props {
   component: ComponentStatus;
-  dates: string[];
-  days: DayStat[];
+  keys: string[];
+  buckets: DayStat[];
+  bucketSeconds: number;
 }
 
-const { component, dates, days } = Astro.props;
+const { component, keys, buckets, bucketSeconds } = Astro.props;
 
 // A rate-limited or unmeasurable component needs to say why, otherwise a grey
 // or yellow row reads as an unexplained shrug.
@@ -47,8 +48,10 @@ const reason = component.error ? REASON[component.error] : null;
   <UptimeBar
     id={component.id}
     name={component.name}
-    dates={dates}
-    days={days}
-    uptime90={component.uptime['90d']}
+    keys={keys}
+    buckets={buckets}
+    bucketSeconds={bucketSeconds}
+    uptime={component.uptime['24h']}
+    uptimeLabel="24 小時可用率"
   />
 </div>

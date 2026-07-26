@@ -12,6 +12,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import type {
+  Buckets,
   MonthlyRollup,
   ProbeState,
   RawRecord,
@@ -61,6 +62,14 @@ export class DataStore {
 
   writeSnapshot(snapshot: StatusSnapshot): void {
     writeJson(this.p('status.json'), snapshot);
+  }
+
+  readBuckets(): Buckets | null {
+    return readJson<Buckets | null>(this.p('minutes.json'), null);
+  }
+
+  writeBuckets(buckets: Buckets): void {
+    writeJson(this.p('minutes.json'), buckets);
   }
 
   readSummary(): Summary | null {

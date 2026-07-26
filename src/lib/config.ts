@@ -74,7 +74,9 @@ export function loadConfig(): MonitorConfig {
     api: doc.api,
     groups,
     concurrency: defaults.concurrency ?? 1,
-    staggerMs: defaults.staggerMs ?? 1500,
+    staggerMs: defaults.staggerMs ?? 1000,
+    probe: doc.probe ?? { intervalSeconds: 30, runSeconds: 270 },
+    display: doc.display ?? { barCells: 90, barBucketSeconds: 60 },
     alerting: doc.alerting,
     retention: doc.retention,
   };

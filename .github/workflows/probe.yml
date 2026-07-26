@@ -2,8 +2,9 @@ name: probe
 
 on:
   schedule:
-    # Every 5 minutes (UTC). GitHub schedules are best-effort and can slip by
-    # several minutes under load — the recorded timestamps are the real ones.
+    # Five minutes is GitHub's shortest cron, and it is best-effort on top of
+    # that. The interval we actually want is far shorter, so a run loops
+    # internally (see the Probe step) and the schedule just keeps relaunching it.
     - cron: '*/5 * * * *'
   workflow_dispatch:
 
@@ -19,7 +20,7 @@ concurrency:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -37,27 +38,50 @@ jobs:
 
       - run: npm ci
 
-      - name: Probe
+      - name: Probe on a loop
         env:
           AIS3_API_KEY: ${{ secrets.AIS3_API_KEY }}
           ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
-        run: npx tsx scripts/probe.ts --data .data/data
-
-      - name: Commit results
-        working-directory: .data
         run: |
+          set -u
+          interval=$(awk '/^  intervalSeconds:/ {print $2; exit}' config/monitors.yml)
+          duration=$(awk '/^  runSeconds:/ {print $2; exit}' config/monitors.yml)
+          echo "looping every ${interval}s for ${duration}s"
+
+          cd .data
           git config user.name  "status-bot"
           git config user.email "status-bot@users.noreply.github.com"
-          git add -A
-          if git diff --staged --quiet; then
-            echo "no changes"
-            exit 0
-          fi
-          git commit -m "probe: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          # Rounds can overlap when a schedule slips; rebase rather than fail.
-          for attempt in 1 2 3; do
-            if git push; then exit 0; fi
-            echo "push rejected, rebasing (attempt $attempt)"
-            git pull --rebase --autostash origin data || exit 1
+          cd ..
+
+          publish() {
+            cd .data
+            git add -A
+            if git diff --staged --quiet; then cd ..; return 0; fi
+            git commit -q -m "probe: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            for _ in 1 2 3; do
+              if git push -q 2>/dev/null; then cd ..; return 0; fi
+              # Another run got there first. Our snapshot is the newer one, so
+              # replay our files on top of theirs rather than trying to merge.
+              git fetch -q --depth=1 origin data
+              git reset -q --soft FETCH_HEAD
+              git commit -q -m "probe: $(date -u +%Y-%m-%dT%H:%M:%SZ)" || true
+            done
+            echo "::warning::push failed after 3 attempts"
+            cd ..
+            return 0
+          }
+
+          deadline=$(( $(date +%s) + duration ))
+          rounds=0
+          while :; do
+            started=$(date +%s)
+            npx tsx scripts/probe.ts --data .data/data || echo "::warning::round failed"
+            publish
+            rounds=$(( rounds + 1 ))
+
+            now=$(date +%s)
+            [ "$now" -ge "$deadline" ] && break
+            nap=$(( interval - (now - started) ))
+            [ "$nap" -gt 0 ] && sleep "$nap"
           done
-          exit 1
+          echo "completed $rounds rounds"

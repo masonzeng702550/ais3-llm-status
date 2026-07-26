@@ -4,12 +4,12 @@ import Base from '../layouts/Base.astro';
 import StatusBanner from '../components/StatusBanner.astro';
 import ComponentRow from '../components/ComponentRow.astro';
 import IncidentCard from '../components/IncidentCard.astro';
-import { hasData, loadSnapshot, loadSummary } from '../lib/site-data.ts';
+import { hasData, loadBuckets, loadSnapshot } from '../lib/site-data.ts';
 import { EMPTY_DAY } from '../lib/stats.ts';
 import { withBase } from '../lib/url.ts';
 
 const snapshot = loadSnapshot();
-const summary = loadSummary();
+const buckets = loadBuckets();
 const dataPresent = hasData();
 
 const now = new Date();
@@ -27,7 +27,7 @@ const active = incidents.filter(isActive);
 const cutoff = new Date(now.getTime() - 14 * 86_400_000);
 const recent = incidents.filter((i) => !isActive(i) && i.data.startedAt >= cutoff).slice(0, 5);
 
-const daysFor = (id: string) => summary.components[id] ?? summary.dates.map(() => EMPTY_DAY);
+const bucketsFor = (id: string) => buckets.components[id] ?? buckets.keys.map(() => EMPTY_DAY);
 ---
 
 <Base>
@@ -68,7 +68,12 @@ const daysFor = (id: string) => summary.components[id] ?? summary.dates.map(() =
           {group.description && <span class="card-desc">{group.description}</span>}
         </div>
         {group.components.map((component) => (
-          <ComponentRow component={component} dates={summary.dates} days={daysFor(component.id)} />
+          <ComponentRow
+            component={component}
+            keys={buckets.keys}
+            buckets={bucketsFor(component.id)}
+            bucketSeconds={buckets.bucketSeconds}
+          />
         ))}
       </section>
     ))

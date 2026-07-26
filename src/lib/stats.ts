@@ -89,6 +89,21 @@ export function dateRange(end: Date, days: number): string[] {
 
 export const EMPTY_DAY: DayStat = { n: 0, up: 0, deg: 0, down: 0, p50: null, p95: null, max: null };
 
+/** Start of the bucket a timestamp falls into, as epoch milliseconds. */
+export function bucketStart(time: string | Date, bucketSeconds: number): number {
+  const ms = bucketSeconds * 1000;
+  return Math.floor(new Date(time).getTime() / ms) * ms;
+}
+
+/** `count` bucket-start ISO timestamps ending with the one containing `end`. */
+export function bucketRange(end: Date, bucketSeconds: number, count: number): string[] {
+  const ms = bucketSeconds * 1000;
+  const last = bucketStart(end, bucketSeconds);
+  return Array.from({ length: count }, (_, i) =>
+    new Date(last - (count - 1 - i) * ms).toISOString(),
+  );
+}
+
 /** Worst status observed in a day, used to colour-code incident history. */
 export function worstStatus(records: RawRecord[]): Status {
   if (records.some((r) => r.s === 'major_outage')) return 'major_outage';

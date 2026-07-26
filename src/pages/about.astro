@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { RAW_BASE, REPO_URL, site } from '../lib/site-data.ts';
+import { RAW_BASE, REPO_URL, probeInterval, site } from '../lib/site-data.ts';
 import { loadConfig } from '../lib/config.ts';
 import { STATUS_LABEL } from '../lib/status.ts';
 
@@ -35,7 +35,7 @@ const DEFINITIONS: { status: keyof typeof STATUS_LABEL; rule: string }[] = [
     <h2>探測方式</h2>
 
     <p>
-      每 5 分鐘一輪，對每個模型送出一次<strong>真實的推論請求</strong>（而非僅檢查端點是否存活）。
+      每 {probeInterval} 秒一輪，對每個模型送出一次<strong>真實的推論請求</strong>（而非僅檢查端點是否存活）。
       這是刻意的選擇：最常見的故障是閘道正常回應 200、但後端推論節點已經死亡，
       單純 ping 端點完全看不出來。
     </p>
@@ -71,8 +71,10 @@ const DEFINITIONS: { status: keyof typeof STATUS_LABEL; rule: string }[] = [
       降級次數會另外單獨統計，避免長期偏慢的元件躲在 100% 後面。
     </p>
     <p>
-      沒有探測資料的日子（例如排程未執行）在長條圖上顯示為灰色，
-      並且<strong>不計入分母</strong>——把沒量到的時間當成正常，是狀態頁最不該犯的錯。
+      首頁長條圖每一格代表<strong>一分鐘</strong>（{60 / probeInterval} 次探測），
+      共 {config.display.barCells} 格，因此約一個半小時就會填滿。
+      沒有探測資料的區間（例如排程未執行）顯示為灰色，並且<strong>不計入分母</strong>
+      ——把沒量到的時間當成正常，是狀態頁最不該犯的錯。
     </p>
 
     <h2>延遲門檻</h2>
@@ -100,6 +102,7 @@ const DEFINITIONS: { status: keyof typeof STATUS_LABEL; rule: string }[] = [
 
     <ul>
       <li><a href={`${RAW_BASE}/status.json`}><code>status.json</code></a> — 目前狀態快照</li>
+      <li><a href={`${RAW_BASE}/minutes.json`}><code>minutes.json</code></a> — 首頁長條圖用的每分鐘統計</li>
       <li><a href={`${RAW_BASE}/summary.json`}><code>summary.json</code></a> — 近 90 天每日彙總</li>
       <li><code>daily/YYYY-MM.json</code> — 每月的每日彙總，永久保留</li>
       <li><code>raw/YYYY-MM-DD.jsonl</code> — 原始探測紀錄，保留 {config.retention.rawDays} 天</li>
@@ -114,7 +117,7 @@ const DEFINITIONS: { status: keyof typeof STATUS_LABEL; rule: string }[] = [
     <h2>已知限制</h2>
 
     <ul>
-      <li>排程由 GitHub Actions 觸發，屬於 best-effort，尖峰時段可能延遲數分鐘。頁面顯示的是<strong>實際</strong>探測時間，而非假設的等距時間。</li>
+      <li>GitHub Actions 的排程最短只能到 5 分鐘，且屬於 best-effort。因此實際做法是由排程啟動一個持續 {(config.probe.runSeconds / 60).toFixed(0)} 分鐘的工作，在其中每 {probeInterval} 秒探測一輪。若排程本身延遲，資料會出現空隙——長條圖上會顯示為灰色，而不是假裝正常。</li>
       <li>探測從單一網路位置發出，無法區分「服務中斷」與「該路徑上的網路問題」。</li>
       <li>若排程本身停擺，頁面會在資料超過 15 分鐘未更新時顯示過期警示，而不是繼續顯示綠燈。</li>
     </ul>
