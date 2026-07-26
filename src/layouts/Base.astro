@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { RAW_BASE, REPO_URL, site } from '../lib/site-data.ts';
+import { API_BASE, RAW_BASE, REPO_URL, site } from '../lib/site-data.ts';
 import { withBase } from '../lib/url.ts';
 
 interface Props {
@@ -34,7 +34,7 @@ const isCurrent = (href: string) => path === href.replace(/\/$/, '');
       } catch (e) {}
     </script>
   </head>
-  <body data-raw={RAW_BASE}>
+  <body data-raw={RAW_BASE} data-api={API_BASE}>
     <header class="site-header">
       <div class="wrap">
         <a class="brand" href={withBase('/')}>

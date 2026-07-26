@@ -25,6 +25,17 @@ export const probeInterval = config.probe.intervalSeconds;
 
 export const RAW_BASE = `https://raw.githubusercontent.com/${site.owner}/${site.repo}/${site.dataBranch}/data`;
 
+/**
+ * raw.githubusercontent ignores the query string when caching, so a cache
+ * buster cannot force a revalidation — measured lag is 2-5 minutes. The API
+ * contents endpoint answers within seconds but allows only 60 requests an hour
+ * per IP, so it is used sparingly as a freshness fallback, never as the
+ * primary source.
+ */
+export const API_BASE = `https://api.github.com/repos/${site.owner}/${site.repo}/contents/data`;
+
+export const DATA_BRANCH = site.dataBranch;
+
 export const SITE_URL = `https://${site.owner}.github.io/${site.repo}/`;
 
 export const REPO_URL = `https://github.com/${site.owner}/${site.repo}`;

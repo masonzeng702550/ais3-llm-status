@@ -12,9 +12,22 @@ import { formatDateTime, relativeTime } from '../lib/format.ts';
 import type { Buckets, DayStat, StatusSnapshot } from '../lib/types.ts';
 
 const RAW = document.body.dataset.raw ?? '';
-// Data lands every 30s; poll a little faster so a change is never more than a
-// few seconds stale on screen.
-const REFRESH_MS = 20_000;
+const API = document.body.dataset.api ?? '';
+const BRANCH = 'data';
+
+// Data lands every 30s; poll at the same cadence.
+const REFRESH_MS = 30_000;
+
+// raw.githubusercontent ignores the query string when caching, so nothing we do
+// client-side forces a revalidation — measured lag is 2-5 minutes. When what it
+// hands back is this old, take one look at the API contents endpoint, which is
+// current within seconds.
+const STALE_SOURCE_MS = 120_000;
+
+// That endpoint allows 60 requests an hour per IP and we spend two per attempt,
+// so never attempt more often than this. Exceeding it would 403 us out of the
+// fallback entirely, which is worse than being a couple of minutes behind.
+const API_MIN_GAP_MS = 180_000;
 const STALE_MS = 15 * 60_000;
 
 const ERROR_REASON: Record<string, string> = {
@@ -40,6 +53,16 @@ const bust = (file: string) => `${RAW}/${file}?v=${Math.floor(Date.now() / REFRE
 
 async function fetchJson<T>(file: string): Promise<T> {
   const res = await fetch(bust(file), { cache: 'no-store' });
+  if (!res.ok) throw new Error(`${file}: HTTP ${res.status}`);
+  return (await res.json()) as T;
+}
+
+/** `Accept: raw` returns the file body directly rather than base64 metadata. */
+async function fetchViaApi<T>(file: string): Promise<T> {
+  const res = await fetch(`${API}/${file}?ref=${BRANCH}`, {
+    headers: { accept: 'application/vnd.github.raw' },
+    cache: 'no-store',
+  });
   if (!res.ok) throw new Error(`${file}: HTTP ${res.status}`);
   return (await res.json()) as T;
 }
@@ -129,12 +152,30 @@ function tipFor(key: string, stat: DayStat | undefined, pct: number | null): str
   );
 }
 
+let lastApiAttempt = 0;
+
 async function refresh(): Promise<void> {
   try {
-    const [snapshot, buckets] = await Promise.all([
+    let [snapshot, buckets] = await Promise.all([
       fetchJson<StatusSnapshot>('status.json'),
       fetchJson<Buckets>('minutes.json'),
     ]);
+
+    const lag = Date.now() - new Date(snapshot.generatedAt).getTime();
+    if (API && lag > STALE_SOURCE_MS && Date.now() - lastApiAttempt > API_MIN_GAP_MS) {
+      lastApiAttempt = Date.now();
+      try {
+        // Both files together — a snapshot paired with mismatched buckets would
+        // show a status that disagrees with the bar beside it.
+        [snapshot, buckets] = await Promise.all([
+          fetchViaApi<StatusSnapshot>('status.json'),
+          fetchViaApi<Buckets>('minutes.json'),
+        ]);
+      } catch {
+        // Rate limited or unreachable — the CDN copy is still perfectly usable.
+      }
+    }
+
     applySnapshot(snapshot);
     applyBuckets(buckets);
     setNotice('fetch-notice', false);
