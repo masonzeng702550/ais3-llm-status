@@ -117,7 +117,7 @@ const DEFINITIONS: { status: keyof typeof STATUS_LABEL; rule: string }[] = [
     <h2>已知限制</h2>
 
     <ul>
-      <li>GitHub Actions 的排程最短只能到 5 分鐘，且屬於 best-effort。因此實際做法是由排程啟動一個持續 {(config.probe.runSeconds / 60).toFixed(0)} 分鐘的工作，在其中每 {probeInterval} 秒探測一輪。若排程本身延遲，資料會出現空隙——長條圖上會顯示為灰色，而不是假裝正常。</li>
+      <li>GitHub Actions 的排程最短只能到 5 分鐘，且屬於 best-effort。實測甚至常被節流到約一小時才觸發一次。因此排程只當作啟動器：每次執行會持續 {(config.probe.runSeconds / 3600).toFixed(1)} 小時、在其中每 {probeInterval} 秒探測一輪，並靠佇列讓下一次接力。若仍出現空隙，長條圖會顯示為灰色，而不是假裝正常。</li>
       <li>探測從單一網路位置發出，無法區分「服務中斷」與「該路徑上的網路問題」。</li>
       <li>若排程本身停擺，頁面會在資料超過 15 分鐘未更新時顯示過期警示，而不是繼續顯示綠燈。</li>
     </ul>

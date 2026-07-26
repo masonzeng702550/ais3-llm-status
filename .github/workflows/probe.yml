@@ -2,9 +2,10 @@ name: probe
 
 on:
   schedule:
-    # Five minutes is GitHub's shortest cron, and it is best-effort on top of
-    # that. The interval we actually want is far shorter, so a run loops
-    # internally (see the Probe step) and the schedule just keeps relaunching it.
+    # Five minutes is GitHub's shortest cron, and in practice it is throttled to
+    # roughly once an hour. This schedule is therefore only a keepalive: each run
+    # loops internally for hours (see the Probe step), and the concurrency queue
+    # below means the next run is already waiting when the current one exits.
     - cron: '*/5 * * * *'
   workflow_dispatch:
 
@@ -20,7 +21,8 @@ concurrency:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    # Just past runSeconds; GitHub kills a job at 6h regardless.
+    timeout-minutes: 350
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

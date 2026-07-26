@@ -113,8 +113,16 @@ probe:
   # this interval instead. Raising it is the single knob for cutting load on the
   # upstream service: at 30s this issues ~26,000 requests a day.
   intervalSeconds: 30
-  # How long one workflow run keeps looping before exiting for the next tick.
-  runSeconds: 270
+  # How long one workflow run keeps looping before exiting.
+  #
+  # A '*/5' cron is nominally every 5 minutes, but GitHub throttles it hard:
+  # measured 2026-07-26, it actually fired every 65-93 minutes, so a 4.5-minute
+  # run covered only 7% of the timeline. One long run plus the concurrency
+  # queue closes that gap — the next run is already pending when this one ends,
+  # so the only downtime is job startup.
+  #
+  # 5.5h, kept clear of the 6h hard limit on a job.
+  runSeconds: 19800
 
 display:
   # The bar shows one cell per bucket, newest on the right.
