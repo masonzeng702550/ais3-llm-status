@@ -1,0 +1,38 @@
+name: compact
+
+on:
+  schedule:
+    # 1st of the month, 18:20 UTC.
+    - cron: '20 18 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  compact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: data
+          path: .data
+          fetch-depth: 0
+
+      # The data branch takes ~288 commits a day. None of that history has any
+      # value: every measurement already lives inside the files themselves, in
+      # raw/ and daily/. Squash the branch to a single commit so the repository
+      # does not grow without bound.
+      - name: Squash data branch history
+        working-directory: .data
+        run: |
+          before=$(git rev-list --count HEAD)
+          git config user.name  "status-bot"
+          git config user.email "status-bot@users.noreply.github.com"
+          git checkout --orphan squashed
+          git add -A
+          git commit -m "compact: snapshot at $(date -u +%Y-%m-%d)"
+          git branch -M squashed data
+          git push --force origin data
+          echo "squashed $before commits into 1"

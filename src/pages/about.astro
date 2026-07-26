@@ -1,0 +1,122 @@
+---
+import Base from '../layouts/Base.astro';
+import { RAW_BASE, REPO_URL, site } from '../lib/site-data.ts';
+import { loadConfig } from '../lib/config.ts';
+import { STATUS_LABEL } from '../lib/status.ts';
+
+const config = loadConfig();
+const components = config.groups.flatMap((g) => g.components);
+
+const DEFINITIONS: { status: keyof typeof STATUS_LABEL; rule: string }[] = [
+  { status: 'operational', rule: '探測成功，且延遲低於該元件的門檻。' },
+  { status: 'degraded', rule: '探測成功但超過延遲門檻、需重試才成功，或被限流（HTTP 429）。' },
+  { status: 'partial_outage', rule: '群組內部分元件探測失敗。' },
+  { status: 'major_outage', rule: '該元件重試後仍失敗。' },
+  { status: 'maintenance', rule: '落在人工公告的維護視窗內，不計入可用率。' },
+  { status: 'unknown', rule: '未能取得有效量測（例如探測憑證遭拒），不計入可用率。' },
+];
+---
+
+<Base title="說明" description="這個狀態頁如何量測 AIS3 LLM 服務">
+  <div class="prose">
+    <h1 style="font-size:22px;letter-spacing:-0.01em">關於這個頁面</h1>
+
+    <p>
+      這是一個針對 AIS3 LLM 服務（<code>llm-api.zoolab.org</code> 與
+      <code>llm.zoolab.org</code>）的<strong>外部黑箱監測</strong>頁面。它從外部實際呼叫 API，
+      沒有任何內部指標（GPU 使用率、佇列長度等）的存取權，因此只能反映「從網際網路上看起來如何」。
+    </p>
+
+    <p>
+      <strong>這不是 AIS3 官方公告管道。</strong>
+      量測結果與判定門檻皆由本專案自行定義，僅供參考。
+    </p>
+
+    <h2>探測方式</h2>
+
+    <p>
+      每 5 分鐘一輪，對每個模型送出一次<strong>真實的推論請求</strong>（而非僅檢查端點是否存活）。
+      這是刻意的選擇：最常見的故障是閘道正常回應 200、但後端推論節點已經死亡，
+      單純 ping 端點完全看不出來。
+    </p>
+
+    <ul>
+      <li>請求內容為固定的極短提示，<code>max_tokens</code> 設為 {config.groups[0]?.components[0]?.maxTokens ?? 16}，盡量減少對配額的消耗。</li>
+      <li>使用串流模式，因此可以分別量測<strong>首個 token 時間（TTFT）</strong>與總延遲。</li>
+      <li>各元件循序探測並間隔 {(config.staggerMs / 1000).toFixed(1)} 秒，避免併發請求彼此排隊而污染延遲數據。</li>
+      <li>第一次失敗會等待後重試一次；只有重試也失敗才判定為中斷。僅在重試後才成功者記為「效能降級」。</li>
+      <li><strong>模型的回應內容永遠不會被記錄</strong>，只保留「是否有回應」的布林值、延遲與 HTTP 狀態碼。</li>
+    </ul>
+
+    <h2>狀態定義</h2>
+
+    <table>
+      <thead>
+        <tr><th>狀態</th><th>判定條件</th></tr>
+      </thead>
+      <tbody>
+        {DEFINITIONS.map((d) => (
+          <tr>
+            <td>{STATUS_LABEL[d.status]}</td>
+            <td>{d.rule}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    <h2>可用率如何計算</h2>
+
+    <p>
+      可用率 =（正常 + 降級）÷ 有效探測次數。降級計為「可用」，因為服務確實有回應；
+      降級次數會另外單獨統計，避免長期偏慢的元件躲在 100% 後面。
+    </p>
+    <p>
+      沒有探測資料的日子（例如排程未執行）在長條圖上顯示為灰色，
+      並且<strong>不計入分母</strong>——把沒量到的時間當成正常，是狀態頁最不該犯的錯。
+    </p>
+
+    <h2>延遲門檻</h2>
+
+    <p>各模型的規模差異極大，共用同一組門檻只會讓大模型長期誤判為降級，因此門檻逐一設定：</p>
+
+    <table>
+      <thead>
+        <tr><th>元件</th><th>降級門檻</th><th>逾時</th></tr>
+      </thead>
+      <tbody>
+        {components.map((c) => (
+          <tr>
+            <td>{c.name}</td>
+            <td>{(c.degradedMs / 1000).toFixed(1)} 秒</td>
+            <td>{(c.timeoutMs / 1000).toFixed(0)} 秒</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    <h2>資料</h2>
+
+    <p>所有量測資料都是公開的靜態 JSON，可直接取用（CORS 已開放）：</p>
+
+    <ul>
+      <li><a href={`${RAW_BASE}/status.json`}><code>status.json</code></a> — 目前狀態快照</li>
+      <li><a href={`${RAW_BASE}/summary.json`}><code>summary.json</code></a> — 近 90 天每日彙總</li>
+      <li><code>daily/YYYY-MM.json</code> — 每月的每日彙總，永久保留</li>
+      <li><code>raw/YYYY-MM-DD.jsonl</code> — 原始探測紀錄，保留 {config.retention.rawDays} 天</li>
+      <li><code>badges/&lt;元件&gt;.svg</code> — 可嵌入的狀態徽章</li>
+    </ul>
+
+    <p>
+      <code>schemaVersion</code> 是相容性的唯一依據；欄位只增不減。
+      資料以 CC BY 4.0 釋出，程式碼見 <a href={REPO_URL}>{site.owner}/{site.repo}</a>。
+    </p>
+
+    <h2>已知限制</h2>
+
+    <ul>
+      <li>排程由 GitHub Actions 觸發，屬於 best-effort，尖峰時段可能延遲數分鐘。頁面顯示的是<strong>實際</strong>探測時間，而非假設的等距時間。</li>
+      <li>探測從單一網路位置發出，無法區分「服務中斷」與「該路徑上的網路問題」。</li>
+      <li>若排程本身停擺，頁面會在資料超過 15 分鐘未更新時顯示過期警示，而不是繼續顯示綠燈。</li>
+    </ul>
+  </div>
+</Base>

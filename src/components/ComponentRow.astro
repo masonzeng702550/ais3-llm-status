@@ -1,0 +1,54 @@
+---
+import UptimeBar from './UptimeBar.astro';
+import { STATUS_LABEL, formatLatency } from '../lib/status.ts';
+import type { ComponentStatus, DayStat } from '../lib/types.ts';
+
+interface Props {
+  component: ComponentStatus;
+  dates: string[];
+  days: DayStat[];
+}
+
+const { component, dates, days } = Astro.props;
+
+// A rate-limited or unmeasurable component needs to say why, otherwise a grey
+// or yellow row reads as an unexplained shrug.
+const REASON: Record<string, string> = {
+  http_429: '請求被限流',
+  http_401: '探測憑證遭拒',
+  http_403: '探測憑證遭拒',
+  timeout: '逾時',
+  sse_stall: '串流中斷',
+  bad_response: '回應異常',
+  network: '連線失敗',
+  http_5xx: '伺服器錯誤',
+  http_4xx: '請求遭拒',
+};
+
+const reason = component.error ? REASON[component.error] : null;
+---
+
+<div class="component" data-component={component.id}>
+  <div class="component-top">
+    <div>
+      <div class="component-name">{component.name}</div>
+      {component.model && <div class="component-sub">{component.model}</div>}
+    </div>
+    <div class="component-latency" data-latency={component.id}>
+      {component.latencyMs !== null && formatLatency(component.latencyMs)}
+    </div>
+    <div class={`component-status s-${component.status}`} data-status={component.id}>
+      <span class="dot" aria-hidden="true"></span>
+      <span data-status-text={component.id}>
+        {STATUS_LABEL[component.status]}{reason ? `（${reason}）` : ''}
+      </span>
+    </div>
+  </div>
+  <UptimeBar
+    id={component.id}
+    name={component.name}
+    dates={dates}
+    days={days}
+    uptime90={component.uptime['90d']}
+  />
+</div>

@@ -1,0 +1,51 @@
+---
+import { OVERALL_LABEL, STATUS_GLYPH } from '../lib/status.ts';
+import { formatDateTime, relativeTime } from '../lib/format.ts';
+import type { Status } from '../lib/types.ts';
+
+interface Props {
+  status: Status;
+  generatedAt: string;
+  hasData: boolean;
+}
+
+const { status, generatedAt, hasData } = Astro.props;
+const stamp = hasData ? generatedAt : null;
+---
+
+<div class={`banner banner-${status}`} id="banner">
+  <span class="banner-glyph" id="banner-glyph" aria-hidden="true">{STATUS_GLYPH[status]}</span>
+  <div>
+    <div class="banner-title" id="banner-title">{OVERALL_LABEL[status]}</div>
+  </div>
+  <div class="banner-meta">
+    {
+      stamp ? (
+        <>
+          <div id="banner-rel">更新於 {relativeTime(stamp)}</div>
+          <time id="banner-abs" datetime={stamp}>
+            {formatDateTime(stamp)}
+          </time>
+        </>
+      ) : (
+        <>
+          <div id="banner-rel">尚未有探測資料</div>
+          <time id="banner-abs" datetime=""></time>
+        </>
+      )
+    }
+  </div>
+</div>
+
+<div class="notice" id="stale-notice" hidden>
+  <span aria-hidden="true">⚠</span>
+  <span>
+    <strong>資料可能已過期。</strong>
+    最後一次成功探測距今超過 15 分鐘，畫面上的狀態未必反映目前實際情況。
+  </span>
+</div>
+
+<div class="notice" id="fetch-notice" hidden>
+  <span aria-hidden="true">⚠</span>
+  <span>無法取得最新資料，以下顯示的是頁面載入時的狀態。</span>
+</div>

@@ -1,0 +1,102 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import StatusBanner from '../components/StatusBanner.astro';
+import ComponentRow from '../components/ComponentRow.astro';
+import IncidentCard from '../components/IncidentCard.astro';
+import { hasData, loadSnapshot, loadSummary } from '../lib/site-data.ts';
+import { EMPTY_DAY } from '../lib/stats.ts';
+import { withBase } from '../lib/url.ts';
+
+const snapshot = loadSnapshot();
+const summary = loadSummary();
+const dataPresent = hasData();
+
+const now = new Date();
+const incidents = (await getCollection('incidents')).sort(
+  (a, b) => b.data.startedAt.getTime() - a.data.startedAt.getTime(),
+);
+
+const isActive = (i: (typeof incidents)[number]) =>
+  i.data.startedAt <= now && (!i.data.resolvedAt || i.data.resolvedAt > now);
+
+const active = incidents.filter(isActive);
+
+// "Recent" is a fortnight — long enough to still be useful on a quiet week,
+// short enough that the front page does not turn into an archive.
+const cutoff = new Date(now.getTime() - 14 * 86_400_000);
+const recent = incidents.filter((i) => !isActive(i) && i.data.startedAt >= cutoff).slice(0, 5);
+
+const daysFor = (id: string) => summary.components[id] ?? summary.dates.map(() => EMPTY_DAY);
+---
+
+<Base>
+  <StatusBanner status={snapshot.overall} generatedAt={snapshot.generatedAt} hasData={dataPresent} />
+
+  {
+    !dataPresent && (
+      <div class="empty" style="margin-top:20px">
+        尚未產生任何探測資料。第一次排程探測完成後，此頁會自動顯示各元件狀態。
+      </div>
+    )
+  }
+
+  {
+    active.length > 0 && (
+      <>
+        <h2 class="section-title">進行中的事件</h2>
+        {active.map((i) => (
+          <IncidentCard
+            slug={i.id}
+            title={i.data.title}
+            type={i.data.type}
+            severity={i.data.severity}
+            startedAt={i.data.startedAt}
+            latestStatus={i.data.updates.at(-1)?.status}
+            latestBody={i.data.updates.at(-1)?.body}
+          />
+        ))}
+      </>
+    )
+  }
+
+  {
+    snapshot.groups.map((group) => (
+      <section class="card">
+        <div class="card-head">
+          <h2>{group.name}</h2>
+          {group.description && <span class="card-desc">{group.description}</span>}
+        </div>
+        {group.components.map((component) => (
+          <ComponentRow component={component} dates={summary.dates} days={daysFor(component.id)} />
+        ))}
+      </section>
+    ))
+  }
+
+  <h2 class="section-title">近期事件</h2>
+  <p class="section-note">
+    僅列出過去 14 天。完整紀錄請見<a href={withBase('/history')}>歷史紀錄</a>。
+  </p>
+  {
+    recent.length > 0 ? (
+      recent.map((i) => (
+        <IncidentCard
+          slug={i.id}
+          title={i.data.title}
+          type={i.data.type}
+          severity={i.data.severity}
+          startedAt={i.data.startedAt}
+          resolvedAt={i.data.resolvedAt}
+          latestStatus={i.data.updates.at(-1)?.status}
+        />
+      ))
+    ) : (
+      <div class="empty">過去 14 天沒有已記錄的事件。</div>
+    )
+  }
+</Base>
+
+<script>
+  import '../scripts/live.ts';
+</script>

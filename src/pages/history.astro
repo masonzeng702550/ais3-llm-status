@@ -1,0 +1,47 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import IncidentCard from '../components/IncidentCard.astro';
+import { formatMonth } from '../lib/format.ts';
+
+const incidents = (await getCollection('incidents')).sort(
+  (a, b) => b.data.startedAt.getTime() - a.data.startedAt.getTime(),
+);
+
+const byMonth = new Map<string, typeof incidents>();
+for (const incident of incidents) {
+  const key = incident.data.startedAt.toISOString().slice(0, 7);
+  const bucket = byMonth.get(key) ?? [];
+  bucket.push(incident);
+  byMonth.set(key, bucket);
+}
+const months = [...byMonth.entries()];
+---
+
+<Base title="歷史紀錄" description="AIS3 LLM 服務的歷史事件與維護紀錄">
+  <h1 class="section-title" style="font-size:20px;margin-top:0">歷史紀錄</h1>
+  <p class="section-note">依事件開始時間分組，最新的在最前面。</p>
+
+  {
+    months.length === 0 ? (
+      <div class="empty">目前沒有任何已記錄的事件。</div>
+    ) : (
+      months.map(([month, list]) => (
+        <section>
+          <h2 class="section-title">{formatMonth(`${month}-01T00:00:00Z`)}</h2>
+          {list.map((i) => (
+            <IncidentCard
+              slug={i.id}
+              title={i.data.title}
+              type={i.data.type}
+              severity={i.data.severity}
+              startedAt={i.data.startedAt}
+              resolvedAt={i.data.resolvedAt}
+              latestStatus={i.data.updates.at(-1)?.status}
+            />
+          ))}
+        </section>
+      ))
+    )
+  }
+</Base>

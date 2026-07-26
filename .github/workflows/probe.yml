@@ -1,0 +1,63 @@
+name: probe
+
+on:
+  schedule:
+    # Every 5 minutes (UTC). GitHub schedules are best-effort and can slip by
+    # several minutes under load — the recorded timestamps are the real ones.
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: probe
+  # Deliberately not cancelling: a cancelled round leaves a hole in the data,
+  # which is worse than two rounds briefly overlapping.
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkout data branch
+        uses: actions/checkout@v4
+        with:
+          ref: data
+          path: .data
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Probe
+        env:
+          AIS3_API_KEY: ${{ secrets.AIS3_API_KEY }}
+          ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
+        run: npx tsx scripts/probe.ts --data .data/data
+
+      - name: Commit results
+        working-directory: .data
+        run: |
+          git config user.name  "status-bot"
+          git config user.email "status-bot@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "no changes"
+            exit 0
+          fi
+          git commit -m "probe: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          # Rounds can overlap when a schedule slips; rebase rather than fail.
+          for attempt in 1 2 3; do
+            if git push; then exit 0; fi
+            echo "push rejected, rebasing (attempt $attempt)"
+            git pull --rebase --autostash origin data || exit 1
+          done
+          exit 1

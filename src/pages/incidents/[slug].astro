@@ -1,0 +1,95 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { formatDateTime, durationSince } from '../../lib/format.ts';
+import { loadSnapshot } from '../../lib/site-data.ts';
+import { withBase } from '../../lib/url.ts';
+
+export async function getStaticPaths() {
+  const incidents = await getCollection('incidents');
+  return incidents.map((incident) => ({ params: { slug: incident.id }, props: { incident } }));
+}
+
+const { incident } = Astro.props;
+const { Content } = await render(incident);
+
+const STATUS_TEXT: Record<string, string> = {
+  investigating: '調查中',
+  identified: '已定位原因',
+  monitoring: '觀察中',
+  resolved: '已解決',
+  scheduled: '已排程',
+  in_progress: '進行中',
+  completed: '已完成',
+};
+
+const SEVERITY_TEXT: Record<string, string> = {
+  minor: '輕微',
+  major: '重大',
+  critical: '嚴重',
+  maintenance: '維護',
+};
+
+// Map affected component ids back to their display names so the page does not
+// leak internal slugs at readers.
+const names = new Map(
+  loadSnapshot().groups.flatMap((g) => g.components.map((c) => [c.id, c.name] as const)),
+);
+
+const { data } = incident;
+const resolved = Boolean(data.resolvedAt);
+const updates = [...data.updates].sort((a, b) => b.at.getTime() - a.at.getTime());
+const duration = data.resolvedAt
+  ? durationSince(data.startedAt, data.resolvedAt)
+  : durationSince(data.startedAt);
+---
+
+<Base title={data.title} description={updates.at(-1)?.body ?? data.title}>
+  <p class="section-note" style="margin-bottom:14px">
+    <a href={withBase('/history')}>← 回到歷史紀錄</a>
+  </p>
+
+  <h1 style="font-size:22px;letter-spacing:-0.01em">{data.title}</h1>
+
+  <div class="incident-meta" style="margin-top:10px">
+    <span class={`tag tag-${resolved ? 'resolved' : data.severity}`}>
+      {resolved ? '已解決' : STATUS_TEXT[updates[0]?.status ?? ''] ?? '進行中'}
+    </span>
+    <span class="tag">
+      {data.type === 'maintenance' ? '排程維護' : SEVERITY_TEXT[data.severity] ?? data.severity}
+    </span>
+    <span>
+      {formatDateTime(data.startedAt)}
+      {data.resolvedAt && ` → ${formatDateTime(data.resolvedAt)}`}
+    </span>
+    <span>持續 {duration}</span>
+  </div>
+
+  {
+    data.affected.length > 0 && (
+      <p class="section-note" style="margin-top:10px">
+        受影響元件：{data.affected.map((id) => names.get(id) ?? id).join('、')}
+      </p>
+    )
+  }
+
+  {
+    updates.length > 0 && (
+      <ol class="timeline">
+        {updates.map((update) => (
+          <li>
+            <div class="timeline-head">
+              <span class="timeline-status">{STATUS_TEXT[update.status] ?? update.status}</span>
+              <time datetime={update.at.toISOString()}>{formatDateTime(update.at)}</time>
+            </div>
+            <div>{update.body}</div>
+          </li>
+        ))}
+      </ol>
+    )
+  }
+
+  <div class="prose" style="margin-top:26px">
+    <Content />
+  </div>
+</Base>

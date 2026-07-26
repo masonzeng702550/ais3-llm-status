@@ -1,0 +1,95 @@
+---
+import '../styles/global.css';
+import { RAW_BASE, REPO_URL, site } from '../lib/site-data.ts';
+import { withBase } from '../lib/url.ts';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description = site.tagline } = Astro.props;
+const pageTitle = title ? `${title} — ${site.name}` : site.name;
+const path = Astro.url.pathname.replace(/\/$/, '');
+const isCurrent = (href: string) => path === href.replace(/\/$/, '');
+---
+
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href={withBase('favicon.svg')} type="image/svg+xml" />
+    <script is:inline>
+      // Applied before first paint so a dark-mode visitor never sees a white flash.
+      try {
+        var t = localStorage.getItem('theme');
+        if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body data-raw={RAW_BASE}>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href={withBase('/')}>
+          <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="1.5" y="1.5" width="21" height="21" rx="6" stroke="currentColor" stroke-width="1.6"></rect>
+            <path d="M6 13.2l3.1 3.4L18 7.6" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          <span>{site.name}</span>
+        </a>
+        <nav class="site-nav">
+          <a href={withBase('/')} aria-current={isCurrent(withBase('/')) ? 'page' : undefined}>目前狀態</a>
+          <a href={withBase('/history')} aria-current={isCurrent(withBase('/history')) ? 'page' : undefined}>歷史紀錄</a>
+          <a href={withBase('/about')} aria-current={isCurrent(withBase('/about')) ? 'page' : undefined}>說明</a>
+          <button class="theme-toggle" type="button" id="theme-toggle" aria-label="切換深色/淺色模式">
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 14.2A8.2 8.2 0 019.8 4a8.4 8.4 0 102.4 16.4A8.2 8.2 0 0020 14.2z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path>
+            </svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.7"></circle>
+              <path d="M12 2.6v2.2M12 19.2v2.2M21.4 12h-2.2M4.8 12H2.6M18.6 5.4l-1.6 1.6M7 17l-1.6 1.6M18.6 18.6L17 17M7 7L5.4 5.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+            </svg>
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="wrap">
+        <slot />
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>由外部黑箱探測產生，非 AIS3 官方公告。</span>
+        <span class="spacer"></span>
+        <a href={withBase('/about')}>探測方式</a>
+        <a href={REPO_URL}>原始碼</a>
+      </div>
+    </footer>
+
+    <div id="tip" role="tooltip" aria-hidden="true"></div>
+
+    <script is:inline>
+      document.getElementById('theme-toggle')?.addEventListener('click', function () {
+        var root = document.documentElement;
+        var current =
+          root.dataset.theme ||
+          (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        var next = current === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = next;
+        try {
+          localStorage.setItem('theme', next);
+        } catch (e) {}
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,116 @@
+# Single source of truth for everything this status page monitors.
+# Both the probe scripts and the site read from this file.
+
+site:
+  name: AIS3 LLM Status
+  tagline: AIS3 大型語言模型服務狀態
+  timezone: Asia/Taipei
+  owner: masonzeng702550
+  repo: ais3-llm-status
+  dataBranch: data
+
+api:
+  baseUrl: https://llm-api.zoolab.org/v1
+  authEnv: AIS3_API_KEY
+  userAgent: ais3-llm-status/1.0
+
+defaults:
+  probeType: chat
+  maxTokens: 16
+  temperature: 0
+  stream: true
+  retries: 1
+  retryDelayMs: 5000
+  prompt: "Reply with exactly one word: pong"
+  expectValue: pong
+  # The backend rejects concurrent requests from one key with 429, and parallel
+  # probes contend with each other enough to poison the latency numbers anyway.
+  # Probe one component at a time, spaced out.
+  concurrency: 1
+  staggerMs: 1500
+  # 429 means "slow down", not "you are broken" — back off much further than a
+  # normal retry before deciding anything.
+  rateLimitRetryDelayMs: 15000
+
+groups:
+  - id: llm-api
+    name: LLM API
+    description: llm-api.zoolab.org 上各模型的實際推論可用性
+    components:
+      - id: llama-3.1-8b
+        name: Llama 3.1 8B
+        model: ais3/llama-3.1-8b
+        context: 128K
+        degradedMs: 3000
+        timeoutMs: 30000
+
+      - id: llama-guard-3-8b
+        name: Llama Guard 3 8B
+        model: ais3/llama-guard-3-8b
+        context: 128K
+        probeType: guard
+        degradedMs: 3000
+        timeoutMs: 30000
+
+      - id: gemma-4-12b
+        name: Gemma 4 12B
+        model: ais3/gemma-4-12b
+        context: 256K
+        degradedMs: 4000
+        timeoutMs: 40000
+
+      - id: gemma-4-26b
+        name: Gemma 4 26B
+        model: ais3/gemma-4-26b
+        context: 256K
+        degradedMs: 4000
+        timeoutMs: 45000
+
+      - id: nemotron-cascade-2-30b
+        name: Nemotron Cascade 2 30B
+        model: ais3/nemotron-cascade-2-30b
+        context: 256K
+        degradedMs: 4000
+        timeoutMs: 45000
+
+      - id: llama-3.3-70b
+        name: Llama 3.3 70B
+        model: ais3/llama-3.3-70b
+        context: 128K
+        degradedMs: 6000
+        timeoutMs: 60000
+
+      - id: nemotron-3-ultra-550b
+        name: Nemotron 3 Ultra 550B
+        model: ais3/nemotron-3-ultra-550b
+        context: 256K
+        degradedMs: 8000
+        timeoutMs: 90000
+
+  - id: platform
+    name: 平台
+    description: 端點與網頁介面的可達性
+    components:
+      - id: api-gateway
+        name: API Gateway
+        probeType: http
+        url: https://llm-api.zoolab.org/v1/models
+        auth: true
+        degradedMs: 2000
+        timeoutMs: 15000
+
+      - id: web-ui
+        name: Web Chat UI
+        probeType: http
+        url: https://llm.zoolab.org
+        auth: false
+        degradedMs: 3000
+        timeoutMs: 15000
+
+alerting:
+  webhookEnv: ALERT_WEBHOOK_URL
+  failuresBeforeAlert: 2
+
+retention:
+  rawDays: 30
+  summaryDays: 90

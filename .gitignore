@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+.astro/
+
+# secrets — never commit
+.env
+.env.*
+!.env.example
+
+# probe data checkout (lives on the `data` branch)
+.data/
+
+# editors / os
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# local planning notes
+docs/

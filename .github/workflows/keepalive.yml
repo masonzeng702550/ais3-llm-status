@@ -1,0 +1,27 @@
+name: keepalive
+
+on:
+  schedule:
+    - cron: '40 3 1 * *'
+  workflow_dispatch:
+
+# GitHub disables scheduled workflows in a repository that has seen no activity
+# for 60 days. Commits made by a bot do not reliably count as activity, so the
+# probe can quietly stop running months in — exactly the failure mode a status
+# page must not have. Re-enable everything once a month.
+permissions:
+  actions: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Re-enable scheduled workflows
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for wf in probe.yml rollup.yml compact.yml keepalive.yml; do
+            gh workflow enable "$wf" 2>/dev/null && echo "enabled $wf" || echo "$wf already enabled"
+          done

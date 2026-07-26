@@ -1,0 +1,29 @@
+{
+  "name": "ais3-llm-status",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "probe": "tsx scripts/probe.ts",
+    "rollup": "tsx scripts/rollup.ts",
+    "badge": "tsx scripts/badge.ts",
+    "notify": "tsx scripts/notify.ts",
+    "test": "node --test --experimental-strip-types scripts/**/*.test.ts"
+  },
+  "dependencies": {
+    "astro": "^5.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "yaml": "^2.7.0"
+  }
+}

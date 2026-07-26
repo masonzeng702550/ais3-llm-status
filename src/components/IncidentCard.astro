@@ -1,0 +1,52 @@
+---
+import { formatDateTime } from '../lib/format.ts';
+import { withBase } from '../lib/url.ts';
+
+interface Props {
+  slug: string;
+  title: string;
+  type: 'incident' | 'maintenance';
+  severity: string;
+  startedAt: Date | string;
+  resolvedAt?: Date | string;
+  latestStatus?: string;
+  latestBody?: string;
+}
+
+const { slug, title, type, severity, startedAt, resolvedAt, latestStatus, latestBody } =
+  Astro.props;
+
+const STATUS_TEXT: Record<string, string> = {
+  investigating: '調查中',
+  identified: '已定位原因',
+  monitoring: '觀察中',
+  resolved: '已解決',
+  scheduled: '已排程',
+  in_progress: '進行中',
+  completed: '已完成',
+};
+
+const SEVERITY_TEXT: Record<string, string> = {
+  minor: '輕微',
+  major: '重大',
+  critical: '嚴重',
+  maintenance: '維護',
+};
+
+const resolved = Boolean(resolvedAt);
+---
+
+<article class={`incident${resolved ? '' : ' incident-active'}`}>
+  <h3>
+    <a href={withBase(`/incidents/${slug}`)}>{title}</a>
+  </h3>
+  <div class="incident-meta">
+    <span class={`tag tag-${resolved ? 'resolved' : severity}`}>
+      {resolved ? '已解決' : (STATUS_TEXT[latestStatus ?? ''] ?? '進行中')}
+    </span>
+    <span class="tag">{type === 'maintenance' ? '排程維護' : SEVERITY_TEXT[severity] ?? severity}</span>
+    <time datetime={new Date(startedAt).toISOString()}>{formatDateTime(startedAt)}</time>
+    {resolvedAt && <span>→ {formatDateTime(resolvedAt)}</span>}
+  </div>
+  {latestBody && <p style="margin:10px 0 0;color:var(--text-muted);font-size:14px">{latestBody}</p>}
+</article>
