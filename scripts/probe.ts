@@ -24,6 +24,7 @@ import type {
   ComponentConfig,
   ComponentStatus,
   DayStat,
+  ErrorKind,
   GroupStatus,
   ProbeState,
   RawRecord,
@@ -64,13 +65,13 @@ async function probeWithRetry(
   component: ComponentConfig,
   api: { baseUrl: string; userAgent: string },
   apiKey: string,
-): Promise<{ attempt: Attempt; attemptNo: number }> {
+): Promise<{ attempt: Attempt; attemptNo: number; firstError: ErrorKind | null }> {
   const first = await probeComponent(component, api, apiKey);
-  if (first.ok) return { attempt: first, attemptNo: 1 };
+  if (first.ok) return { attempt: first, attemptNo: 1, firstError: null };
 
   // An auth failure will fail identically on retry; don't waste the wait.
   if (first.error === 'http_401' || first.error === 'http_403') {
-    return { attempt: first, attemptNo: 1 };
+    return { attempt: first, attemptNo: 1, firstError: first.error };
   }
 
   let last = first;
@@ -79,9 +80,12 @@ async function probeWithRetry(
     // retrying after 5s just earns another 429.
     await sleep(last.error === 'http_429' ? component.rateLimitRetryDelayMs : component.retryDelayMs);
     last = await probeComponent(component, api, apiKey);
-    if (last.ok) return { attempt: last, attemptNo: n + 1 };
+    // A successful retry still reports why the first attempt failed —
+    // otherwise the component goes yellow with no stated reason and the cause
+    // is unrecoverable after the fact.
+    if (last.ok) return { attempt: last, attemptNo: n + 1, firstError: first.error };
   }
-  return { attempt: last, attemptNo: component.retries + 1 };
+  return { attempt: last, attemptNo: component.retries + 1, firstError: first.error };
 }
 
 function toStatus(
@@ -131,26 +135,31 @@ async function main(): Promise<void> {
 
   const outcomes = await pooled(components, config.concurrency, async (component, index) => {
     if (maintaining.has(component.id)) {
-      return { component, attempt: null as Attempt | null, attemptNo: 0 };
+      return {
+        component,
+        attempt: null as Attempt | null,
+        attemptNo: 0,
+        firstError: null as ErrorKind | null,
+      };
     }
     // Space probes out: back-to-back requests on one key draw 429s, and they
     // also queue behind each other on the backend, inflating the latency we
     // are trying to measure.
     if (index > 0) await sleep(config.staggerMs);
     try {
-      const { attempt, attemptNo } = await probeWithRetry(component, config.api, apiKey);
-      return { component, attempt, attemptNo };
+      return { component, ...(await probeWithRetry(component, config.api, apiKey)) };
     } catch (err) {
       console.warn(`[probe] ${component.id}: ${redact((err as Error).message)}`);
       return {
         component,
         attempt: { ok: false, latencyMs: null, ttftMs: null, code: null, error: 'network' as const },
         attemptNo: 1,
+        firstError: 'network' as ErrorKind,
       };
     }
   });
 
-  const records: RawRecord[] = outcomes.map(({ component, attempt, attemptNo }) => {
+  const records: RawRecord[] = outcomes.map(({ component, attempt, attemptNo, firstError }) => {
     const status = toStatus(component, attempt ?? blankAttempt(), attemptNo, maintaining.has(component.id));
     return {
       t: startedAt,
@@ -160,7 +169,7 @@ async function main(): Promise<void> {
       ttft: attempt?.ttftMs ?? null,
       code: attempt?.code ?? null,
       a: attemptNo,
-      e: attempt?.error ?? null,
+      e: attempt?.error ?? firstError ?? null,
     };
   });
 
