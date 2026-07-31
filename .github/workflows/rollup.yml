@@ -8,6 +8,10 @@ on:
 
 permissions:
   contents: write
+  # Needed by the final step, which dispatches deploy.yml. Without it the
+  # default token gets a 403 and fails the run after the rollup itself
+  # succeeded.
+  actions: write
 
 concurrency:
   group: rollup
@@ -55,6 +59,11 @@ jobs:
       - name: Refresh the published snapshot
         # The site bakes in a build-time snapshot; nudge it once a day so the
         # no-JavaScript view does not drift further than 24 hours behind.
+        #
+        # Cosmetic next to the rollup above: the live page fetches its data
+        # client-side every 30s regardless. Never fail the run over it — a red
+        # cross here would imply the measurements were lost, which they were not.
+        continue-on-error: true
         run: gh workflow run deploy.yml --ref main
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
