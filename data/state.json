@@ -1,0 +1,58 @@
+{
+  "components": {
+    "llama-3.1-8b": {
+      "status": "unknown",
+      "since": "2026-08-03T12:27:02.682Z",
+      "consecutiveFailures": 0,
+      "alerted": false
+    },
+    "llama-guard-3-8b": {
+      "status": "unknown",
+      "since": "2026-08-03T12:27:02.682Z",
+      "consecutiveFailures": 0,
+      "alerted": false
+    },
+    "gemma-4-12b": {
+      "status": "unknown",
+      "since": "2026-08-03T12:27:02.682Z",
+      "consecutiveFailures": 0,
+      "alerted": false
+    },
+    "gemma-4-26b": {
+      "status": "unknown",
+      "since": "2026-07-31T15:13:31.230Z",
+      "consecutiveFailures": 0,
+      "alerted": false
+    },
+    "nemotron-cascade-2-30b": {
+      "status": "unknown",
+      "since": "2026-07-31T15:13:31.230Z",
+      "consecutiveFailures": 0,
+      "alerted": false
+    },
+    "llama-3.3-70b": {
+      "status": "unknown",
+      "since": "2026-07-31T15:13:31.230Z",
+      "consecutiveFailures": 0,
+      "alerted": false
+    },
+    "nemotron-3-ultra-550b": {
+      "status": "unknown",
+      "since": "2026-07-31T15:13:31.230Z",
+      "consecutiveFailures": 0,
+      "alerted": false
+    },
+    "api-gateway": {
+      "status": "unknown",
+      "since": "2026-07-31T15:13:31.230Z",
+      "consecutiveFailures": 0,
+      "alerted": false
+    },
+    "web-ui": {
+      "status": "operational",
+      "since": "2026-08-06T09:46:49.668Z",
+      "consecutiveFailures": 0,
+      "alerted": false
+    }
+  }
+}

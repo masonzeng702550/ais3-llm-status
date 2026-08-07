@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-07T19:16:33.239Z",
+  "overall": "operational",
+  "groups": [
+    {
+      "id": "llm-api",
+      "name": "LLM API",
+      "description": "llm-api.zoolab.org 上各模型的實際推論可用性",
+      "status": "unknown",
+      "components": [
+        {
+          "id": "llama-3.1-8b",
+          "name": "Llama 3.1 8B",
+          "model": "ais3/llama-3.1-8b",
+          "context": "128K",
+          "status": "unknown",
+          "latencyMs": 674,
+          "ttftMs": null,
+          "error": "http_401",
+          "lastCheck": "2026-08-07T19:16:33.239Z",
+          "since": "2026-08-03T12:27:02.682Z",
+          "uptime": {
+            "24h": null,
+            "7d": 0,
+            "30d": 99.89564938192326,
+            "90d": 99.89564938192326
+          },
+          "latency": {
+            "p50": 518,
+            "p95": 709
+          }
+        },
+        {
+          "id": "llama-guard-3-8b",
+          "name": "Llama Guard 3 8B",
+          "model": "ais3/llama-guard-3-8b",
+          "context": "128K",
+          "status": "unknown",
+          "latencyMs": 165,
+          "ttftMs": null,
+          "error": "http_401",
+          "lastCheck": "2026-08-07T19:16:33.239Z",
+          "since": "2026-08-03T12:27:02.682Z",
+          "uptime": {
+            "24h": null,
+            "7d": 0,
+            "30d": 99.478205025287,
+            "90d": 99.478205025287
+          },
+          "latency": {
+            "p50": 163,
+            "p95": 190
+          }
+        },
+        {
+          "id": "gemma-4-12b",
+          "name": "Gemma 4 12B",
+          "model": "ais3/gemma-4-12b",
+          "context": "256K",
+          "status": "unknown",
+          "latencyMs": 178,
+          "ttftMs": null,
+          "error": "http_401",
+          "lastCheck": "2026-08-07T19:16:33.239Z",
+          "since": "2026-08-03T12:27:02.682Z",
+          "uptime": {
+            "24h": null,
+            "7d": 0,
+            "30d": 99.97591715501325,
+            "90d": 99.97591715501325
+          },
+          "latency": {
+            "p50": 162,
+            "p95": 190
+          }
+        },
+        {
+          "id": "gemma-4-26b",
+          "name": "Gemma 4 26B",
+          "model": "ais3/gemma-4-26b",
+          "context": "256K",
+          "status": "unknown",
+          "latencyMs": 168,
+          "ttftMs": null,
+          "error": "http_401",
+          "lastCheck": "2026-08-07T19:16:33.239Z",
+          "since": "2026-07-31T15:13:31.230Z",
+          "uptime": {
+            "24h": null,
+            "7d": null,
+            "30d": 99.97591328783622,
+            "90d": 99.97591328783622
+          },
+          "latency": {
+            "p50": 162,
+            "p95": 189
+          }
+        },
+        {
+          "id": "nemotron-cascade-2-30b",
+          "name": "Nemotron Cascade 2 30B",
+          "model": "ais3/nemotron-cascade-2-30b",
+          "context": "256K",
+          "status": "unknown",
+          "latencyMs": 164,
+          "ttftMs": null,
+          "error": "http_401",
+          "lastCheck": "2026-08-07T19:16:33.239Z",
+          "since": "2026-07-31T15:13:31.230Z",
+          "uptime": {
+            "24h": null,
+            "7d": null,
+            "30d": 99.9839421918908,
+            "90d": 99.9839421918908
+          },
+          "latency": {
+            "p50": 162,
+            "p95": 192
+          }
+        },
+        {
+          "id": "llama-3.3-70b",
+          "name": "Llama 3.3 70B",
+          "model": "ais3/llama-3.3-70b",
+          "context": "128K",
+          "status": "unknown",
+          "latencyMs": 164,
+          "ttftMs": null,
+          "error": "http_401",
+          "lastCheck": "2026-08-07T19:16:33.239Z",
+          "since": "2026-07-31T15:13:31.230Z",
+          "uptime": {
+            "24h": null,
+            "7d": null,
+            "30d": 99.96788438378161,
+            "90d": 99.96788438378161
+          },
+          "latency": {
+            "p50": 162,
+            "p95": 189
+          }
+        },
+        {
+          "id": "nemotron-3-ultra-550b",
+          "name": "Nemotron 3 Ultra 550B",
+          "model": "ais3/nemotron-3-ultra-550b",
+          "context": "256K",
+          "status": "unknown",
+          "latencyMs": 167,
+          "ttftMs": null,
+          "error": "http_401",
+          "lastCheck": "2026-08-07T19:16:33.239Z",
+          "since": "2026-07-31T15:13:31.230Z",
+          "uptime": {
+            "24h": null,
+            "7d": null,
+            "30d": 99.95985547972703,
+            "90d": 99.95985547972703
+          },
+          "latency": {
+            "p50": 162,
+            "p95": 188
+          }
+        }
+      ]
+    },
+    {
+      "id": "platform",
+      "name": "平台",
+      "description": "端點與網頁介面的可達性",
+      "status": "operational",
+      "components": [
+        {
+          "id": "api-gateway",
+          "name": "API Gateway",
+          "status": "unknown",
+          "latencyMs": 171,
+          "ttftMs": null,
+          "error": "http_401",
+          "lastCheck": "2026-08-07T19:16:33.239Z",
+          "since": "2026-07-31T15:13:31.230Z",
+          "uptime": {
+            "24h": null,
+            "7d": null,
+            "30d": 99.96788438378161,
+            "90d": 99.96788438378161
+          },
+          "latency": {
+            "p50": 162,
+            "p95": 190
+          }
+        },
+        {
+          "id": "web-ui",
+          "name": "Web Chat UI",
+          "status": "operational",
+          "latencyMs": 481,
+          "ttftMs": null,
+          "error": null,
+          "lastCheck": "2026-08-07T19:16:33.239Z",
+          "since": "2026-08-06T09:46:49.668Z",
+          "uptime": {
+            "24h": 100,
+            "7d": 100,
+            "30d": 100,
+            "90d": 100
+          },
+          "latency": {
+            "p50": 473,
+            "p95": 672
+          }
+        }
+      ]
+    }
+  ],
+  "activeIncidents": []
+}
