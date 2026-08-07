@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-07T22:53:35.627Z",
+  "generatedAt": "2026-08-07T22:54:05.723Z",
   "overall": "operational",
   "groups": [
     {
@@ -15,10 +15,10 @@
           "model": "ais3/llama-3.1-8b",
           "context": "128K",
           "status": "unknown",
-          "latencyMs": 740,
+          "latencyMs": 721,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-07T22:53:35.627Z",
+          "lastCheck": "2026-08-07T22:54:05.723Z",
           "since": "2026-08-03T12:27:02.682Z",
           "uptime": {
             "24h": null,
@@ -27,7 +27,7 @@
             "90d": 99.89564938192326
           },
           "latency": {
-            "p50": 537,
+            "p50": 538,
             "p95": 715
           }
         },
@@ -37,10 +37,10 @@
           "model": "ais3/llama-guard-3-8b",
           "context": "128K",
           "status": "unknown",
-          "latencyMs": 215,
+          "latencyMs": 199,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-07T22:53:35.627Z",
+          "lastCheck": "2026-08-07T22:54:05.723Z",
           "since": "2026-08-03T12:27:02.682Z",
           "uptime": {
             "24h": null,
@@ -59,10 +59,10 @@
           "model": "ais3/gemma-4-12b",
           "context": "256K",
           "status": "unknown",
-          "latencyMs": 217,
+          "latencyMs": 196,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-07T22:53:35.627Z",
+          "lastCheck": "2026-08-07T22:54:05.723Z",
           "since": "2026-08-03T12:27:02.682Z",
           "uptime": {
             "24h": null,
@@ -81,10 +81,10 @@
           "model": "ais3/gemma-4-26b",
           "context": "256K",
           "status": "unknown",
-          "latencyMs": 200,
+          "latencyMs": 198,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-07T22:53:35.627Z",
+          "lastCheck": "2026-08-07T22:54:05.723Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -103,10 +103,10 @@
           "model": "ais3/nemotron-cascade-2-30b",
           "context": "256K",
           "status": "unknown",
-          "latencyMs": 200,
+          "latencyMs": 407,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-07T22:53:35.627Z",
+          "lastCheck": "2026-08-07T22:54:05.723Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -125,10 +125,10 @@
           "model": "ais3/llama-3.3-70b",
           "context": "128K",
           "status": "unknown",
-          "latencyMs": 199,
+          "latencyMs": 203,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-07T22:53:35.627Z",
+          "lastCheck": "2026-08-07T22:54:05.723Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -138,7 +138,7 @@
           },
           "latency": {
             "p50": 163,
-            "p95": 190
+            "p95": 191
           }
         },
         {
@@ -147,10 +147,10 @@
           "model": "ais3/nemotron-3-ultra-550b",
           "context": "256K",
           "status": "unknown",
-          "latencyMs": 214,
+          "latencyMs": 200,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-07T22:53:35.627Z",
+          "lastCheck": "2026-08-07T22:54:05.723Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -175,10 +175,10 @@
           "id": "api-gateway",
           "name": "API Gateway",
           "status": "unknown",
-          "latencyMs": 215,
+          "latencyMs": 205,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-07T22:53:35.627Z",
+          "lastCheck": "2026-08-07T22:54:05.723Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -195,10 +195,10 @@
           "id": "web-ui",
           "name": "Web Chat UI",
           "status": "operational",
-          "latencyMs": 652,
+          "latencyMs": 684,
           "ttftMs": null,
           "error": null,
-          "lastCheck": "2026-08-07T22:53:35.627Z",
+          "lastCheck": "2026-08-07T22:54:05.723Z",
           "since": "2026-08-06T09:46:49.668Z",
           "uptime": {
             "24h": 100,
