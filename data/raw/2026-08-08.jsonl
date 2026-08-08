@@ -7774,3 +7774,12 @@
 {"t":"2026-08-08T07:11:37.957Z","c":"nemotron-3-ultra-550b","s":"unknown","ms":194,"ttft":null,"code":401,"a":1,"e":"http_401"}
 {"t":"2026-08-08T07:11:37.957Z","c":"api-gateway","s":"unknown","ms":214,"ttft":null,"code":401,"a":1,"e":"http_401"}
 {"t":"2026-08-08T07:11:37.957Z","c":"web-ui","s":"operational","ms":713,"ttft":null,"code":200,"a":1,"e":null}
+{"t":"2026-08-08T07:12:08.467Z","c":"llama-3.1-8b","s":"unknown","ms":755,"ttft":null,"code":401,"a":1,"e":"http_401"}
+{"t":"2026-08-08T07:12:08.467Z","c":"llama-guard-3-8b","s":"unknown","ms":208,"ttft":null,"code":401,"a":1,"e":"http_401"}
+{"t":"2026-08-08T07:12:08.467Z","c":"gemma-4-12b","s":"unknown","ms":210,"ttft":null,"code":401,"a":1,"e":"http_401"}
+{"t":"2026-08-08T07:12:08.467Z","c":"gemma-4-26b","s":"unknown","ms":202,"ttft":null,"code":401,"a":1,"e":"http_401"}
+{"t":"2026-08-08T07:12:08.467Z","c":"nemotron-cascade-2-30b","s":"unknown","ms":195,"ttft":null,"code":401,"a":1,"e":"http_401"}
+{"t":"2026-08-08T07:12:08.467Z","c":"llama-3.3-70b","s":"unknown","ms":198,"ttft":null,"code":401,"a":1,"e":"http_401"}
+{"t":"2026-08-08T07:12:08.467Z","c":"nemotron-3-ultra-550b","s":"unknown","ms":202,"ttft":null,"code":401,"a":1,"e":"http_401"}
+{"t":"2026-08-08T07:12:08.467Z","c":"api-gateway","s":"unknown","ms":213,"ttft":null,"code":401,"a":1,"e":"http_401"}
+{"t":"2026-08-08T07:12:08.467Z","c":"web-ui","s":"operational","ms":677,"ttft":null,"code":200,"a":1,"e":null}
