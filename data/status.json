@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-08T05:13:35.738Z",
+  "generatedAt": "2026-08-08T05:14:06.256Z",
   "overall": "operational",
   "groups": [
     {
@@ -15,10 +15,10 @@
           "model": "ais3/llama-3.1-8b",
           "context": "128K",
           "status": "unknown",
-          "latencyMs": 720,
+          "latencyMs": 704,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T05:13:35.738Z",
+          "lastCheck": "2026-08-08T05:14:06.256Z",
           "since": "2026-08-03T12:27:02.682Z",
           "uptime": {
             "24h": null,
@@ -27,7 +27,7 @@
             "90d": 99.89564938192326
           },
           "latency": {
-            "p50": 609,
+            "p50": 610,
             "p95": 776
           }
         },
@@ -37,10 +37,10 @@
           "model": "ais3/llama-guard-3-8b",
           "context": "128K",
           "status": "unknown",
-          "latencyMs": 214,
+          "latencyMs": 197,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T05:13:35.738Z",
+          "lastCheck": "2026-08-08T05:14:06.256Z",
           "since": "2026-08-03T12:27:02.682Z",
           "uptime": {
             "24h": null,
@@ -59,10 +59,10 @@
           "model": "ais3/gemma-4-12b",
           "context": "256K",
           "status": "unknown",
-          "latencyMs": 200,
+          "latencyMs": 194,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T05:13:35.738Z",
+          "lastCheck": "2026-08-08T05:14:06.256Z",
           "since": "2026-08-03T12:27:02.682Z",
           "uptime": {
             "24h": null,
@@ -84,7 +84,7 @@
           "latencyMs": 213,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T05:13:35.738Z",
+          "lastCheck": "2026-08-08T05:14:06.256Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -106,7 +106,7 @@
           "latencyMs": 198,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T05:13:35.738Z",
+          "lastCheck": "2026-08-08T05:14:06.256Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -125,10 +125,10 @@
           "model": "ais3/llama-3.3-70b",
           "context": "128K",
           "status": "unknown",
-          "latencyMs": 215,
+          "latencyMs": 199,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T05:13:35.738Z",
+          "lastCheck": "2026-08-08T05:14:06.256Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -147,10 +147,10 @@
           "model": "ais3/nemotron-3-ultra-550b",
           "context": "256K",
           "status": "unknown",
-          "latencyMs": 213,
+          "latencyMs": 215,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T05:13:35.738Z",
+          "lastCheck": "2026-08-08T05:14:06.256Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -178,7 +178,7 @@
           "latencyMs": 200,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T05:13:35.738Z",
+          "lastCheck": "2026-08-08T05:14:06.256Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -195,10 +195,10 @@
           "id": "web-ui",
           "name": "Web Chat UI",
           "status": "operational",
-          "latencyMs": 593,
+          "latencyMs": 589,
           "ttftMs": null,
           "error": null,
-          "lastCheck": "2026-08-08T05:13:35.738Z",
+          "lastCheck": "2026-08-08T05:14:06.256Z",
           "since": "2026-08-06T09:46:49.668Z",
           "uptime": {
             "24h": 100,
