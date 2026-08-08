@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-08T11:31:47.083Z",
+  "generatedAt": "2026-08-08T11:32:16.811Z",
   "overall": "operational",
   "groups": [
     {
@@ -15,10 +15,10 @@
           "model": "ais3/llama-3.1-8b",
           "context": "128K",
           "status": "unknown",
-          "latencyMs": 766,
+          "latencyMs": 638,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T11:31:47.083Z",
+          "lastCheck": "2026-08-08T11:32:16.811Z",
           "since": "2026-08-03T12:27:02.682Z",
           "uptime": {
             "24h": null,
@@ -37,10 +37,10 @@
           "model": "ais3/llama-guard-3-8b",
           "context": "128K",
           "status": "unknown",
-          "latencyMs": 214,
+          "latencyMs": 196,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T11:31:47.083Z",
+          "lastCheck": "2026-08-08T11:32:16.811Z",
           "since": "2026-08-03T12:27:02.682Z",
           "uptime": {
             "24h": null,
@@ -62,7 +62,7 @@
           "latencyMs": 200,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T11:31:47.083Z",
+          "lastCheck": "2026-08-08T11:32:16.811Z",
           "since": "2026-08-03T12:27:02.682Z",
           "uptime": {
             "24h": null,
@@ -81,10 +81,10 @@
           "model": "ais3/gemma-4-26b",
           "context": "256K",
           "status": "unknown",
-          "latencyMs": 204,
+          "latencyMs": 199,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T11:31:47.083Z",
+          "lastCheck": "2026-08-08T11:32:16.811Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -93,7 +93,7 @@
             "90d": 99.97591328783622
           },
           "latency": {
-            "p50": 197,
+            "p50": 198,
             "p95": 214
           }
         },
@@ -103,10 +103,10 @@
           "model": "ais3/nemotron-cascade-2-30b",
           "context": "256K",
           "status": "unknown",
-          "latencyMs": 213,
+          "latencyMs": 200,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T11:31:47.083Z",
+          "lastCheck": "2026-08-08T11:32:16.811Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -125,10 +125,10 @@
           "model": "ais3/llama-3.3-70b",
           "context": "128K",
           "status": "unknown",
-          "latencyMs": 199,
+          "latencyMs": 198,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T11:31:47.083Z",
+          "lastCheck": "2026-08-08T11:32:16.811Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -147,10 +147,10 @@
           "model": "ais3/nemotron-3-ultra-550b",
           "context": "256K",
           "status": "unknown",
-          "latencyMs": 206,
+          "latencyMs": 211,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T11:31:47.083Z",
+          "lastCheck": "2026-08-08T11:32:16.811Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -175,10 +175,10 @@
           "id": "api-gateway",
           "name": "API Gateway",
           "status": "unknown",
-          "latencyMs": 213,
+          "latencyMs": 218,
           "ttftMs": null,
           "error": "http_401",
-          "lastCheck": "2026-08-08T11:31:47.083Z",
+          "lastCheck": "2026-08-08T11:32:16.811Z",
           "since": "2026-07-31T15:13:31.230Z",
           "uptime": {
             "24h": null,
@@ -195,10 +195,10 @@
           "id": "web-ui",
           "name": "Web Chat UI",
           "status": "operational",
-          "latencyMs": 730,
+          "latencyMs": 674,
           "ttftMs": null,
           "error": null,
-          "lastCheck": "2026-08-08T11:31:47.083Z",
+          "lastCheck": "2026-08-08T11:32:16.811Z",
           "since": "2026-08-06T09:46:49.668Z",
           "uptime": {
             "24h": 100,
@@ -207,7 +207,7 @@
             "90d": 100
           },
           "latency": {
-            "p50": 627,
+            "p50": 628,
             "p95": 736
           }
         }
